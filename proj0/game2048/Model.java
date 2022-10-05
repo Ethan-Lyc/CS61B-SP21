@@ -1,5 +1,6 @@
 package game2048;
 
+import java.awt.desktop.AboutEvent;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -138,7 +139,16 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        boolean flag = false;
+        int size = b.size();
+        for(int i = 0; i < size; i += 1){
+            for(int j = 0; j < size; j += 1){
+                if(b.tile(i,j) == null){
+                    flag = true;
+                }
+            }
+        }
+        return flag;
     }
 
     /**
@@ -148,7 +158,18 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        boolean flag = false;
+        int size = b.size();
+        for(int i = 0; i < size; i += 1){
+            for(int j = 0; j < size; j += 1){
+                if(b.tile(i,j) != null){
+                    if(b.tile(i,j).value() == MAX_PIECE){
+                        flag = true;
+                    }
+                }
+            }
+        }
+        return flag;
     }
 
     /**
@@ -159,7 +180,27 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        int[][] dirs = {{0,1},{1,0},{0,-1},{-1,0}};
+        boolean flag = false;
+        int size = b.size();
+        for(int i = 0; i < size; i += 1){
+            for(int j = 0; j < size; j += 1){
+                if(b.tile(i,j) == null){
+                    flag = true;
+                }
+                for(int k = 0; k < 4; k+= 1){
+                    int ni = i + dirs[k][0];
+                    int nj = j + dirs[k][1];
+                    if(ni >= 0 && ni < size && nj >= 0 && nj < size){
+                        if(b.tile(ni,nj) != null && b.tile(i,j) != null && b.tile(ni,nj).value() == b.tile(i,j).value()){
+                            flag = true;
+                        }
+                    }
+
+                }
+            }
+        }
+        return flag;
     }
 
 
