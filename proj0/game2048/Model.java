@@ -1,6 +1,9 @@
 package game2048;
 
+import org.junit.Test;
+
 import java.awt.desktop.AboutEvent;
+import java.awt.event.HierarchyBoundsAdapter;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -114,12 +117,51 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        board.setViewingPerspective(side);
+        boolean f1 = moveUp(board);
+        boolean f2 = mergeTile(board);
+        boolean f3 = moveUp(board);
+        changed = f1 || f2 || f3;
+        board.setViewingPerspective(side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    public boolean moveUp(Board b){
+        boolean flag = false;
+        for(int col = 0; col < 4; col += 1){
+            for(int row = 2; row >= 0; row -= 1){
+                int cur = row;
+                while(row < 3 && b.tile(col,row + 1) == null && b.tile(col,row) != null){
+                    flag = true;
+                    Tile t = b.tile(col, row);
+                    b.move(col,row + 1,t);
+                    row += 1;
+                }
+                row = cur;
+            }
+        }
+        return flag;
+    }
+    public boolean mergeTile(Board b){
+        boolean flag = false;
+        for(int col = 0; col < 4; col += 1){
+            for(int row = 2; row > 0; row -= 1){
+                if(b.tile(col,row) != null){
+                    Tile t = b.tile(col,row);
+                    if(b.tile(col,row + 1) != null && t.value() == b.tile(col,row + 1).value()){
+                        score += 2 * t.value();
+                        b.move(col,row + 1,t);
+                        moveUp(b);
+                        flag = true;
+                    }
+                }
+            }
+        }
+        return flag;
     }
 
     /** Checks if the game is over and sets the gameOver variable
