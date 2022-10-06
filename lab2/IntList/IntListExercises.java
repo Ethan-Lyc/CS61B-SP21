@@ -78,7 +78,7 @@ public class IntListExercises {
 
         boolean currElemIsPrime = false;
 
-        while(lst != null){
+        while(lst.rest != null){
             if(Primes.isPrime(lst.first)){
                 lst.first *= lst.first;
                 currElemIsPrime = true;
