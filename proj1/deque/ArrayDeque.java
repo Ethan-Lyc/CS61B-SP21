@@ -1,9 +1,5 @@
 package deque;
 
-import afu.org.checkerframework.checker.igj.qual.I;
-import net.sf.saxon.om.Item;
-
-import java.lang.reflect.Array;
 import java.util.Iterator;
 
 public class ArrayDeque<Item> implements Deque<Item>,Iterable<Item>{
