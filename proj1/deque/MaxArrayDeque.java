@@ -8,14 +8,26 @@ public class MaxArrayDeque<T> extends ArrayDeque<T>{
         this.comparator = c;
     }
     public T max(){
-        if(items.length == 0){
+        if(size == 0){
             return null;
         }
-        T item = items[front];
-        for(int i = front ; i < end; i += 1){
-            if(comparator.compare(item,items[i]) == -1){
+        T item = items[nextFirst + 1];
+        for(int i = nextFirst + 1; i < nextLast; i += 1){
+            if(comparator.compare(items[i],item) == 1){
                 item = items[i];
             }
+        }
+        return item;
+    }
+    public T max(Comparator<T> c){
+        if(size == 0){
+            return null;
+        }
+        T item = items[nextFirst + 1];
+        for(int i = nextFirst + 1; i < nextLast; i += 1){
+                if(c.compare(items[i],item) == 1){
+                    item = items[i];
+                }
         }
         return item;
     }

@@ -61,4 +61,36 @@ public class MaxArrayDequeTest {
         Integer max = deque.max();
         assertEquals("答案是123",max.intValue(),123);
     }
+    @Test
+    public void maxItem(){
+        MaxArrayDeque<Integer> deque = new MaxArrayDeque<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                if(o1 > o2){
+                    return 1;
+                }else if(o2 > o1){
+                    return  -1;
+                }else{
+                    return 0;
+                }
+            }
+        });
+        for(int i = 0; i < 500; i += 1){
+            deque.addLast(i);
+        }
+        Integer max = deque.max(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                if(o1 < o2){
+                    return 1;
+                }else if(o1 > o2){
+                    return -1;
+                }else {
+                    return 0;
+                }
+            }
+        });
+        assertEquals(0,(long)max);
+
+    }
 }

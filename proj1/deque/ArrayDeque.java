@@ -7,44 +7,54 @@ import java.lang.reflect.Array;
 import java.util.Iterator;
 
 public class ArrayDeque<Item> implements Deque<Item>,Iterable<Item>{
-    int end;
+    int nextFirst;
     int size;
-    int front;
+    int nextLast;
     Item[] items;
 
     public ArrayDeque(){
         this.items = (Item[]) new Object[8];
         size = 0;
-        front = 0;
-        end = 0;
+        nextFirst = 3;
+        nextLast = 4;
     }
-    private void resize(int capacity) {
+    public void shrinkSize(){
+        if(isEmpty()){
+            resize(8);
+        }else if(items.length / 4 > size && size >= 4){
+            resize(size * 2);
+        }
+    }
+    public void resize(int capacity) {
         Item[] a = (Item[]) new Object[capacity];
-        System.arraycopy(items, front, a, 0, size);
-        front = 0;
-        end = size;
+        int firstPos = Math.abs(capacity - size)/ 2;
+        System.arraycopy(items,nextFirst + 1,a,firstPos,size);
         items = a;
+        nextFirst = firstPos - 1;
+        nextLast = firstPos + size;
+
     }
     @Override
     public void addFirst(Item item) {
-        if(size == items.length){
+        items[nextFirst] = item;
+        nextFirst -= 1;
+        size += 1;
+        if(nextFirst == -1){
             resize(size * 2);
         }
-        items[end] = item;
-        end += 1;
-        size += 1;
 
     }
 
     @Override
     public void addLast(Item x) {
-        if (size == items.length) {
+        items[nextLast] = x;
+        nextLast += 1;
+        size += 1;
+        if(nextLast == items.length){
             resize(size * 2);
         }
 
-        items[end] = x;
-        end += 1;
-        size = size + 1;
+
     }
 
     @Override
@@ -59,41 +69,37 @@ public class ArrayDeque<Item> implements Deque<Item>,Iterable<Item>{
 
     @Override
     public void printDeque() {
-        for(int i = front; i < end; i += 1){
+        for(int i = nextFirst + 1; i < nextLast ; i += 1){
             System.out.println(items[i].toString());
         }
     }
 
     @Override
     public Item removeFirst() {
-        if(size == 0){
+        if(isEmpty()){
             return null;
         }
-        if(size < items.length / 4 && size > 8){
-            resize(items.length / 4);
-        }
-        Item res = items[front];
+        nextFirst += 1;
+        Item item = items[nextFirst];
+        items[nextFirst] = null;
         size -= 1;
-        front += 1;
-        return res;
-
+        shrinkSize();
+        return item;
     }
     public Item getLast() {
-        return items[end - 1];
+        return items[nextLast - 1];
     }
     @Override
     public Item removeLast() {
-        if(size == 0){
+        if(isEmpty()){
             return null;
         }
-        if(size < items.length / 4 && size > 8){
-            resize(items.length / 4);
-        }
-        Item x = getLast();
-        items[end - 1] = null;
-        end -= 1;
-        size = size - 1;
-        return x;
+        nextLast -= 1;
+        Item item = items[nextLast];
+        items[nextLast] = null;
+        size -= 1;
+        shrinkSize();
+        return item;
     }
 
     @Override
@@ -106,17 +112,17 @@ public class ArrayDeque<Item> implements Deque<Item>,Iterable<Item>{
         return new ArrayDequeIterator();
     }
     public class ArrayDequeIterator implements Iterator<Item>{
-        int cur = front;
+        int cur = nextFirst;
 
         @Override
         public boolean hasNext() {
-            return cur < size?true:false;
+            return cur < nextLast - 1?true:false;
         }
 
         @Override
         public Item next() {
             cur += 1;
-            return items[cur - 1];
+            return items[cur];
         }
     }
 
