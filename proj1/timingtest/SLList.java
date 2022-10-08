@@ -4,8 +4,8 @@ package timingtest;
  * of the nakedness within. */
 public class SLList<Item> {
 	private class IntNode {
-		public Item item;
-		public IntNode next;
+		Item item;
+		IntNode next;
 
 		public IntNode(Item i, IntNode n) {
 			item = i;

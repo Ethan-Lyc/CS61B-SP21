@@ -11,12 +11,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         head.next = head;
         size = 0;
     }
-    public LinkedListDeque(T item) {
-        head.next = new Node<>(item, head, head);
-        head.prev = head.next;
-        size = 1;
-    }
-
 
     private static class Node<T> {
         private final T item;
@@ -50,12 +44,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         head.prev.next = node;
         head.prev = node;
         size += 1;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
-
     }
 
     @Override
@@ -149,7 +137,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<T> iterator() {
         return new LinkedListDequeIterator();
     }
     private class LinkedListDequeIterator implements Iterator<T> {

@@ -8,14 +8,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private int nextLast;
     private T[] items;
     private static int M = 8;
-    @SuppressWarnings("unchecked")
-    public ArrayDeque(T item) {
-        items = (T[]) new Object[M];
-        items[3] = item;
-        size = 1;
-        nextFirst = 2;
-        nextLast = 4;
-    }
 
     public ArrayDeque() {
         this.items = (T[]) new Object[8];
@@ -43,14 +35,14 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
         return true;
     }
-    public void shrinkSize() {
+    private void shrinkSize() {
         if (isEmpty()) {
             resize(8);
         } else if (items.length / 4 > size && size >= 4) {
             resize(size * 2);
         }
     }
-    public void resize(int capacity) {
+    private void resize(int capacity) {
         T[] a = (T[]) new Object[capacity];
         int firstPos = Math.abs(capacity - size) / 2;
         System.arraycopy(items, nextFirst + 1, a, firstPos, size);
@@ -83,11 +75,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    @Override
     public int size() {
         return size;
     }
@@ -111,7 +98,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         shrinkSize();
         return item;
     }
-    public T getLast() {
+    private T getLast() {
         return items[nextLast - 1];
     }
     @Override
@@ -140,7 +127,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public Iterator<T> iterator() {
         return new ArrayDequeIterator();
     }
-    public class ArrayDequeIterator implements Iterator<T> {
+    private class ArrayDequeIterator implements Iterator<T> {
         int cur = nextFirst;
 
         @Override
