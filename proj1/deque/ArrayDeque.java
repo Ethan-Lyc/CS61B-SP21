@@ -7,7 +7,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private int size;
     private int nextLast;
     private T[] items;
-    private static int M = 8;
 
     public ArrayDeque() {
         this.items = (T[]) new Object[8];
@@ -21,11 +20,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
             return this == null;
         } else if (o == this) {
             return true;
-        } else if (!(o instanceof ArrayDeque)) {
+        } else if (!(o instanceof Deque)) {
             return false;
         }
-        ArrayDeque<?> lld = (ArrayDeque<?>) o;
-        if (lld.size != this.size) {
+        Deque<?> lld = (Deque<?>) o;
+        if (lld.size() != this.size) {
             return false;
         }
         for (int i = 0; i < size; i += 1) {

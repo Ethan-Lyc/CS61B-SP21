@@ -1,7 +1,11 @@
 package deque;
 
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdRandom;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.Test;
+
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
@@ -116,7 +120,8 @@ public class LinkedListDequeTest {
 
     @Test
     public void nonEmptyInstantiationTest() {
-        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>(1);
+        LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        lld1.addFirst(1);
 
         assertFalse("Should not be empty", lld1.isEmpty());
         assertEquals("Should have size 1", 1, lld1.size());
@@ -208,5 +213,36 @@ public class LinkedListDequeTest {
                 linkedListDeque.get(randIndex);
             }
         }
+    }
+    @Test
+    public void hasNextOnEmptyIterator() {
+        Deque<Integer> deque = new LinkedListDeque<>();
+        Iterator<Integer> seer = deque.iterator();
+        assertFalse(seer.hasNext());
+    }
+    @Test
+    public void theSameElement() {
+        Deque<Integer> adeque = new ArrayDeque<>();
+        Deque<Integer> ldeque = new LinkedListDeque<>();
+        for (int i = 0; i < 500; i += 1) {
+            adeque.addLast(i);
+            ldeque.addLast(i);
+            adeque.addFirst(i);
+            ldeque.addFirst(i);
+        }
+        for (int i = 0; i < 500; i += 1) {
+            assertEquals("should be equal", ldeque.removeLast(),adeque.removeLast());
+            assertEquals("should be equal", ldeque.removeFirst(), adeque.removeFirst());
+        }
+    }
+
+    @Test
+    public void deepEquals() {
+        Deque<String> adeque = new ArrayDeque<>();
+        Deque<String> ldeque = new LinkedListDeque<>();
+        adeque.addFirst("caonima");
+        ldeque.addFirst("caonima");
+        assertTrue(ldeque.equals(adeque));
+
     }
 }
