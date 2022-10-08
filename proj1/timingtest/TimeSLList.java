@@ -1,5 +1,4 @@
 package timingtest;
-import deque.ArrayDeque;
 import deque.LinkedListDeque;
 import edu.princeton.cs.algs4.Stopwatch;
 
@@ -7,11 +6,12 @@ import edu.princeton.cs.algs4.Stopwatch;
  * Created by hug.
  */
 public class TimeSLList {
-    private static void printTimingTable(LinkedListDeque<Integer> Ns, LinkedListDeque<Double> times, LinkedListDeque<Integer> opCounts) {
+    private static void printTimingTable(LinkedListDeque<Integer> ns, LinkedListDeque<Double> times,
+                                         LinkedListDeque<Integer> opCounts) {
         System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
         System.out.printf("------------------------------------------------------------\n");
-        for (int i = 0; i < Ns.size(); i += 1) {
-            int N = Ns.get(i);
+        for (int i = 0; i < ns.size(); i += 1) {
+            int N = ns.get(i);
             double time = times.get(i);
             int opCount = opCounts.get(i);
             double timePerOp = time / opCount * 1e6;
@@ -24,24 +24,23 @@ public class TimeSLList {
     }
 
     public static void timeGetLast() {
-        // TODO: YOUR CODE HERE
-        LinkedListDeque<Integer> Ns = new LinkedListDeque<>();
+        LinkedListDeque<Integer> ns = new LinkedListDeque<>();
         LinkedListDeque<Double> times = new LinkedListDeque<>();
         LinkedListDeque<Integer> opCounts = new LinkedListDeque<>();
-        for(int i = 1000; i <= 128000; i *= 2){
+        for (int i = 1000; i <= 128000; i *= 2) {
             SLList<Integer> cur = new SLList<>();
-            Ns.addLast(i);
+            ns.addLast(i);
             opCounts.addLast(10000);
-            for(int j = 0; j < i; j += 1){
+            for (int j = 0; j < i; j += 1) {
                 cur.addLast(1);
             }
             Stopwatch sw = new Stopwatch();
-            for(int k = 0; k < 10000; k += 1){
+            for (int k = 0; k < 10000; k += 1) {
                 cur.getLast();
             }
             times.addLast(sw.elapsedTime());
         }
-        printTimingTable(Ns,times,opCounts);
+        printTimingTable(ns, times, opCounts);
     }
 
 }
