@@ -5,6 +5,8 @@ import edu.princeton.cs.algs4.StdRandom;
 import org.checkerframework.checker.units.qual.A;
 import org.junit.Test;
 
+import java.lang.instrument.ClassDefinition;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -158,6 +160,8 @@ public class LinkedListDequeTest {
     @Test
     public void iteratorTest() {
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<>();
+        ArrayDeque<Integer> lld2 = new ArrayDeque<>();
+
 
         for (int i = 0; i < 1000; i++) {
             lld1.addLast(i);
@@ -167,6 +171,10 @@ public class LinkedListDequeTest {
         for (int item : lld1) {
             assertEquals("Should have same value", i, item);
             i += 1;
+        }
+        i = 0;
+        for (int item : lld2) {
+            assertEquals("Should have same value",i,item);
         }
     }
 
@@ -240,8 +248,12 @@ public class LinkedListDequeTest {
     public void deepEquals() {
         Deque<String> adeque = new ArrayDeque<>();
         Deque<String> ldeque = new LinkedListDeque<>();
-        adeque.addFirst("caonima");
-        ldeque.addFirst("caonima");
+        adeque.addFirst("caonima2");
+        ldeque.addFirst("caonima2");
+        adeque.addFirst("nihao");
+        ldeque.addFirst("nihao");
+        ldeque.addLast("caonima");
+        adeque.addLast("caonima");
         assertTrue(ldeque.equals(adeque));
 
     }
