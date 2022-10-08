@@ -2,13 +2,11 @@ package tester;
 import static org.junit.Assert.*;
 
 import edu.princeton.cs.algs4.StdRandom;
-import jh61b.junit.In;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Test;
 import student.StudentArrayDeque;
 
 public class TestArrayDequeEC {
-    private static int TEST = 500000;
+    private final int TEST = 500000;
     @Test
     public void testRemoveFirst() {
         StudentArrayDeque<Integer> s = new StudentArrayDeque<>();
@@ -30,26 +28,26 @@ public class TestArrayDequeEC {
             a.addLast(i);
         }
         for (int i = 0; i < TEST; i += 1) {
-            assertEquals("addFirst(5) \n" +
-                    "addFirst(3)\n" +
-                    "removeFirst()", s.removeLast(), a.removeLast());
+            assertEquals("addFirst(5) \n"
+                    + "addFirst(3)\n"
+                    + "removeFirst()", s.removeLast(), a.removeLast());
         }
     }
     @Test
     public void testAddFirst() {
         StudentArrayDeque<Integer> s = new StudentArrayDeque<>();
         ArrayDequeSolution<Integer> a = new ArrayDequeSolution<>();
-        for(int i = 0; i < TEST; i += 1) {
+        for (int i = 0; i < TEST; i += 1) {
             s.addFirst(i);
             a.addFirst(i);
-            assertEquals(a.get(0),s.get(0));
+            assertEquals(a.get(0), s.get(0));
         }
     }
     @Test
     public void testAddLast() {
         StudentArrayDeque<Integer> s = new StudentArrayDeque<>();
         ArrayDequeSolution<Integer> a = new ArrayDequeSolution<>();
-        for(int i = 0; i < TEST; i += 1) {
+        for (int i = 0; i < TEST; i += 1) {
             s.addLast(i);
             a.addLast(i);
             assertEquals(a.get(i), s.get(i));
