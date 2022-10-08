@@ -14,8 +14,8 @@ public class Flik {
     }
     @Test
     public void isSame(){
-        int a = 128;
-        int b = 128;
+        int a = 100000;
+        int b = 100000;
         boolean flag = isSameNumber(a,b);
         System.out.println(flag);
     }
