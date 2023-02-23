@@ -11,7 +11,7 @@ import static capers.Utils.*;
  *    - dogs/ -- folder containing all of the persistent data for dogs
  *    - story -- file containing the current story
  *
- * TODO: change the above structure if you do something different.
+ *
  */
 public class CapersRepository {
     /** Current Working Directory. */
@@ -59,14 +59,7 @@ public class CapersRepository {
      */
     public static void makeDog(String name, String breed, int age) {
         Dog dog = new Dog(name,breed,age);
-        File file = Utils.join(Dog.DOG_FOLDER,name);
-        if(file.exists()){
-            Utils.exitWithError("狗已经存在了！！！");
-        }else{
-            Utils.writeObject(file,dog);
-            System.out.println(dog.toString());
-        }
-
+        dog.saveDog();
     }
 
     /**

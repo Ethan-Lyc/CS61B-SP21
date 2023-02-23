@@ -57,7 +57,11 @@ public class Dog implements Serializable {
      */
     public void haveBirthday() {
         age += 1;
-        System.out.println(toString());
+        File file = Utils.join(DOG_FOLDER,name);
+        Dog dog = fromFile(name);
+        dog.age += 1;
+        Utils.writeObject(file,dog);
+        System.out.println(dog.toString());
         System.out.println("Happy birthday! Woof! Woof!");
     }
 
@@ -65,8 +69,13 @@ public class Dog implements Serializable {
      * Saves a dog to a file for future use.
      */
     public void saveDog() {
-        // TODO (hint: don't forget dog names are unique)
-
+        File file = Utils.join(Dog.DOG_FOLDER,name);
+        if(file.exists()){
+            Utils.exitWithError("狗已经存在了！！！");
+        }else{
+            Utils.writeObject(file,this);
+            System.out.println(this.toString());
+        }
     }
 
     @Override
