@@ -44,7 +44,7 @@ public class BSTMap<K extends Comparable<K>,V> implements Map61B{
     /**
      * Initializes an empty symbol table.
      */
-    private BSTMap() {
+    public BSTMap() {
     }
 
     /**
