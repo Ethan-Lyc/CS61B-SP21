@@ -1,15 +1,21 @@
+
 package hashmap;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  *  A hash table-backed Map implementation. Provides amortized constant time
  *  access to elements via get(), remove(), and put() in the best case.
  *
  *  Assumes null keys will never be inserted, and does not resize down upon remove().
- *  @author YOUR NAME HERE
+ *  @author Yicheng Liao
  */
 public class MyHashMap<K, V> implements Map61B<K, V> {
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;
+    static final int MAXIMUM_CAPACITY = 1 << 30;
+    double loadFactor;
+    private int threshold;
+
 
     /**
      * Protected helper class to store key/value pairs
@@ -30,9 +36,13 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     // You should probably define some more!
 
     /** Constructors */
-    public MyHashMap() { }
+    public MyHashMap() {
+        this.loadFactor = DEFAULT_LOAD_FACTOR;
+    }
 
-    public MyHashMap(int initialSize) { }
+    public MyHashMap(int initialSize) {
+        this(initialSize, DEFAULT_LOAD_FACTOR);
+    }
 
     /**
      * MyHashMap constructor that creates a backing array of initialSize.
@@ -41,13 +51,29 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param initialSize initial size of backing array
      * @param maxLoad maximum load factor
      */
-    public MyHashMap(int initialSize, double maxLoad) { }
+    public MyHashMap(int initialSize, double maxLoad) {
+        if (initialSize < 0)
+            throw new IllegalArgumentException("Illegal initial capacity: " +
+                    initialSize);
+        if (initialSize > MAXIMUM_CAPACITY)
+            initialSize = MAXIMUM_CAPACITY;
+        if (loadFactor <= 0 || Double.isNaN(loadFactor))
+            throw new IllegalArgumentException("Illegal load factor: " +
+                    loadFactor);
+        this.loadFactor = maxLoad;
+        this.threshold = tableSizeFor(initialSize);
+    }
+    static final int tableSizeFor(int cap) {
+        int n = -1 >>> Integer.numberOfLeadingZeros(cap - 1);
+        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    }
 
     /**
      * Returns a new node to be placed in a hash table bucket
      */
     private Node createNode(K key, V value) {
-        return null;
+        Node node = new Node(key,value);
+        return node;
     }
 
     /**
@@ -69,7 +95,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * OWN BUCKET DATA STRUCTURES WITH THE NEW OPERATOR!
      */
     protected Collection<Node> createBucket() {
-        return null;
+        return new ArrayList<>();
     }
 
     /**
@@ -82,10 +108,56 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param tableSize the size of the table to create
      */
     private Collection<Node>[] createTable(int tableSize) {
-        return null;
+        buckets = new Collection[tableSize];
+        return buckets;
     }
 
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
+    @Override
+    public void clear() {
+
+    }
+
+    @Override
+    public boolean containsKey(K key) {
+
+    }
+
+    @Override
+    public V get(K key) {
+        return null;
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    @Override
+    public void put(K key, V value) {
+
+    }
+
+    @Override
+    public Set<K> keySet() {
+        return null;
+    }
+
+    @Override
+    public V remove(K key) {
+        return null;
+    }
+
+    @Override
+    public V remove(K key, V value) {
+        return null;
+    }
+
+    @Override
+    public Iterator<K> iterator() {
+        return null;
+    }
+
 
 }
