@@ -1,4 +1,3 @@
-
 package hashmap;
 
 import java.util.*;
@@ -8,14 +7,9 @@ import java.util.*;
  *  access to elements via get(), remove(), and put() in the best case.
  *
  *  Assumes null keys will never be inserted, and does not resize down upon remove().
- *  @author Yicheng Liao
+ *  @author YOUR NAME HERE
  */
 public class MyHashMap<K, V> implements Map61B<K, V> {
-    static final float DEFAULT_LOAD_FACTOR = 0.75f;
-    static final int MAXIMUM_CAPACITY = 1 << 30;
-    double loadFactor;
-    private int threshold;
-
 
     /**
      * Protected helper class to store key/value pairs
@@ -33,11 +27,16 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     /* Instance Variables */
     private Collection<Node>[] buckets;
+    private int size;
+    private double loadFactor;
+    private int capacity;
+    private static final int DEFAULT_CAPACITY = 16;
+    private static final double DEFAULT_LOAD_FACTOR = 0.75;
     // You should probably define some more!
 
     /** Constructors */
     public MyHashMap() {
-        this.loadFactor = DEFAULT_LOAD_FACTOR;
+        this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
     }
 
     public MyHashMap(int initialSize) {
@@ -52,27 +51,17 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param maxLoad maximum load factor
      */
     public MyHashMap(int initialSize, double maxLoad) {
-        if (initialSize < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " +
-                    initialSize);
-        if (initialSize > MAXIMUM_CAPACITY)
-            initialSize = MAXIMUM_CAPACITY;
-        if (loadFactor <= 0 || Double.isNaN(loadFactor))
-            throw new IllegalArgumentException("Illegal load factor: " +
-                    loadFactor);
         this.loadFactor = maxLoad;
-        this.threshold = tableSizeFor(initialSize);
-    }
-    static final int tableSizeFor(int cap) {
-        int n = -1 >>> Integer.numberOfLeadingZeros(cap - 1);
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+        this.capacity = initialSize;
+        this.size = 0;
+        buckets = createTable(capacity);
     }
 
     /**
      * Returns a new node to be placed in a hash table bucket
      */
     private Node createNode(K key, V value) {
-        Node node = new Node(key,value);
+        Node node = new Node(key, value);
         return node;
     }
 
@@ -95,7 +84,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * OWN BUCKET DATA STRUCTURES WITH THE NEW OPERATOR!
      */
     protected Collection<Node> createBucket() {
-        return new ArrayList<>();
+        return new LinkedList<>();
     }
 
     /**
@@ -108,35 +97,61 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param tableSize the size of the table to create
      */
     private Collection<Node>[] createTable(int tableSize) {
-        buckets = new Collection[tableSize];
-        return buckets;
+        Collection<Node>[] table = new Collection[tableSize];
+        for (int i = 0; i < tableSize; i++) {
+            table[i] = createBucket();
+        }
+        return table;
     }
 
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
     @Override
     public void clear() {
-
+        buckets = createTable(capacity);
+        size = 0;
     }
 
     @Override
     public boolean containsKey(K key) {
-
+        int hash = hash(key);
+        for (Node node : buckets[hash]) {
+            if(node.key.equals(key)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public V get(K key) {
+        int hash = hash(key);
+        for (Node node : buckets[hash]) {
+            if(node.key.equals(key)){
+                return node.value;
+            }
+        }
         return null;
     }
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
     public void put(K key, V value) {
-
+        Node node = createNode(key, value);
+        int hash = hash(key);
+        if (buckets[hash] == null) {
+            buckets[hash] = createBucket();
+        }
+        buckets[hash].add(node);
+        size ++;
+    }
+    private int hash(K key){
+        int hash = key.hashCode();
+        return hash % capacity;
     }
 
     @Override
@@ -158,6 +173,4 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     public Iterator<K> iterator() {
         return null;
     }
-
-
 }
