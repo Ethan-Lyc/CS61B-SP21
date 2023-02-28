@@ -146,31 +146,49 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         if (buckets[hash] == null) {
             buckets[hash] = createBucket();
         }
+        if(containsKey(key)){
+            remove(key);
+        }
         buckets[hash].add(node);
         size ++;
     }
     private int hash(K key){
         int hash = key.hashCode();
-        return hash % capacity;
+        return Math.abs(hash % capacity);
     }
 
     @Override
     public Set<K> keySet() {
-        return null;
+        Set<K> set = new HashSet<>();
+        for (Collection<Node> bucket : buckets) {
+            for (Node node : bucket) {
+                set.add(node.key);
+            }
+        }
+        return set;
     }
 
     @Override
     public V remove(K key) {
+        int hash = hash(key);
+        for (Node node : buckets[hash]) {
+            if(node.key.equals(key)){
+                Node res = node;
+                buckets[hash].remove(node);
+                size --;
+                return res.value;
+            }
+        }
         return null;
     }
 
     @Override
     public V remove(K key, V value) {
-        return null;
+        return remove(key);
     }
 
     @Override
     public Iterator<K> iterator() {
-        return null;
+        return keySet().iterator();
     }
 }
