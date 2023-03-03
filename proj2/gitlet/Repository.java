@@ -31,6 +31,7 @@ public class Repository {
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File BRANCHES = join(GITLET_DIR, "branches");
+    /** The staging area. */
     public static final File OBJECTS = join(GITLET_DIR, "objects");
 
     /* TODO: fill in the rest of this class. */
@@ -41,7 +42,6 @@ public class Repository {
         }
         GITLET_DIR.mkdir();
         OBJECTS.mkdir();
-        BRANCHES.mkdir();
         Commit initialCommit = new Commit("initial commit", new Date(0),
                 new ArrayList<>(), new HashMap<>(), null);
         File initialCommitFile = initialCommit.getFile();
@@ -52,5 +52,11 @@ public class Repository {
     @Test
     public void testInit(){
         init();
+    }
+    public void check(){
+        if(!GITLET_DIR.exists()){
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
     }
 }
