@@ -16,7 +16,7 @@ import static gitlet.Utils.*;
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author Yicheng Liao
  */
 public class Repository {
     /**
@@ -36,8 +36,9 @@ public class Repository {
     public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
     public static final File HEADS_DIR = join(REFS_DIR, "heads");
     public static final File HEAD_FILE = join(GITLET_DIR, "HEAD");
-    public static final File ADDSTAGE_FILE = join(GITLET_DIR, "add_stage");
-    public static final File REMOVESTAGE_FILE = join(GITLET_DIR, "remove_stage");
+    public static final File REMOTES_DIR = join(REFS_DIR, "remotes");
+    public static final File STAGE = join(GITLET_DIR, "stage");
+    public static final File STAGING_DIR = join(GITLET_DIR, "staging");
     public static Commit currCommit;
 
 
@@ -78,20 +79,67 @@ public class Repository {
             System.exit(0);
         }
     }
-    public static void add(String fileName){
+    /**
+     * 1. Staging an already-staged file overwrites the previous entry in the staging area with the new contents.
+     * 2. If the current working version of the file is identical to the version in the current commit,
+     * do not stage it to be added, and remove it from the staging area if it is already there
+     * (as can happen when a file is changed, added, and then changed back to it’s original version).
+     * 3. The file will no longer be staged for removal (see gitlet rm), if it was at the time of the command.
+     *
+     * @param fileName
+     */
+    public void add(String fileName){
         check();
         File file = getFileFromCWD(fileName);
         if(!file.exists()){
             System.out.println("File does not exist.");
             System.exit(0);
         }
+        Commit head = getHead();
+        Stage stage = readStage();
+        String headId = head.getPathToBlobID().getOrDefault(file.getPath(),"");
+        String stageId = stage.getAdded().getOrDefault(fileName, "");
         Blob blob = new Blob(file);
-        addToStage(blob);
+        String blobId = blob.getBlobID();
     }
-    public static void addToStage(Blob blob){
+
+    private Stage readStage() {
+        return readObject(STAGE, Stage.class);
+    }
+
+    public void addToStage(Blob blob){
+
 
     }
-    public static File getFileFromCWD(String fileName){
+    public File getFileFromCWD(String fileName){
         return join(CWD, fileName);
     }
+    private String getHeadBranchName() {
+        return readContentsAsString(HEAD_FILE);
+    }
+    private Commit getHead(){
+        String headBranchName = getHeadBranchName();
+        File branchFile = getBranchFile(headBranchName);
+        Commit head = getCommitFromBranchFile(branchFile);
+        return head;
+    }
+
+    private Commit getCommitFromBranchFile(File branchFile) {
+        String commitId = readContentsAsString(branchFile);
+        return getCommitFromId(commitId);
+    }
+
+    private Commit getCommitFromId(String commitId) {
+        File commitFile = join(OBJECTS_DIR, commitId);
+        if(commitId.equals("null") || !commitFile.exists()){
+            return null;
+        }
+        return readObject(commitFile, Commit.class);
+    }
+
+    private File getBranchFile(String branchName) {
+        return join(HEADS_DIR, branchName);
+    }
+
+
 }
