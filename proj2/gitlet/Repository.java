@@ -203,6 +203,43 @@ public class Repository {
         commitWith(message, List.of(head));
     }
 
+    /*
+    *Unstage the file if it is currently staged for addition.
+    *If the file is tracked in the current commit, stage it
+    *for removal and remove the file from the working directory
+    *if the user has not already done so
+    *(do not remove it unless it is tracked in the current commit).
+     */
+    public void rm(String fileName){
+        File file = join(CWD,fileName);
+        Commit commit = getHead();
+        Stage stage = readStage();
+
+        String stageId = stage.getAdded().getOrDefault(fileName,"");
+        String headId = commit.getBlobs().getOrDefault(fileName,"");
+        Blob blob = new Blob(fileName,CWD);
+        String blobId = blob.getId();
+
+        if(stageId == "" && headId == ""){
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
+        // Unstage the file if it is currently staged for addition.
+        //file is staged, remove it
+        if(!stageId.equals("")){
+            stage.getAdded().remove(fileName);
+        }
+        if(!headId.equals("")){
+            stage.getRemoved().add(fileName);
+        }
+        if(blob.exists() && blobId.equals(headId)){
+            //remove file from the working directory
+            //if the user has not already done so
+            restrictedDelete(file);
+        }
+        writeStage(stage);
+    }
+
     private void commitWith(String message, List<Commit> parents) {
         Stage stage = readStage();
         //if no files have been staged, abort.
@@ -215,7 +252,7 @@ public class Repository {
         writeCommitToFile(commit);
 
         String commitId = commit.getID();
-        String branchName = getBranchName();
+        String branchName = getHeadBranchName();
         File branch = getBranchFile(branchName);
         writeContents(branch,commitId);
     }
@@ -253,7 +290,7 @@ public class Repository {
     }
 
     private Commit getHead() {
-        String branchName = getBranchName();
+        String branchName = getHeadBranchName();
         Commit head = getCommitFromBranchName(branchName);
         return head;
     }
@@ -265,16 +302,21 @@ public class Repository {
         return commit;
     }
 
-    private String getBranchName() {
+    private String getHeadBranchName() {
         String branchName = readContentsAsString(HEAD);
         return branchName;
     }
 
     @Test
     public void test(){
-        init();
+/*        init();
         add("testforAdd");
-        commit("test-Commit");
+        commit("testCommit");
+        add("testforAdd-2");
+        commit("test-Commit - 2");
+        add("testforAdd");*/
+        rm("testforAdd");
+
     }
 
     private void writeCommitToFile(Commit commit) {
