@@ -7,9 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import static gitlet.Utils.*;
@@ -257,6 +254,49 @@ public class Repository {
         }
         System.out.println(sb);
     }
+    public void find(String message){
+        StringBuilder sb = new StringBuilder();
+        List<String> filenames = plainFilenamesIn(COMMITS_DIR);
+        for (String filename : filenames) {
+            Commit commit = getCommitFromId(filename);
+            if(commit.getMessage().equals(message)){
+                sb.append(commit.getID() + "\n");
+            }
+        }
+        if(sb.length() == 0){
+            System.out.println("Found no commit with that message." );
+        }
+        System.out.println(sb);
+    }
+    public void status(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Branches ===" + "\n");
+        List<String> branches = plainFilenamesIn(HEADS_DIR);
+        String headname = getHeadBranchName();
+        for (String branch : branches) {
+            if(branch.equals(headname)){
+                sb.append("*" + branch + "\n");
+            }else{
+                sb.append(branch + "\n");
+            }
+        }
+        sb.append("\n");
+
+        sb.append("=== Staged Files ===" + "\n");
+        Stage stage = readStage();
+        for (String s : stage.getAdded().keySet()) {
+            sb.append(s + "\n");
+        }
+        sb.append("\n");
+
+        sb.append("=== Removed Files ===" + "\n");
+        for (String s : stage.getRemoved()) {
+            sb.append(s + "\n");
+        }
+        sb.append("\n");
+
+        System.out.println(sb);
+    }
 
     private Commit getCommitFromId(String firstParentId) {
         File commitFile = join(COMMITS_DIR,firstParentId);
@@ -341,8 +381,18 @@ public class Repository {
         commit("testCommit");
         add("testforAdd-2");
         commit("test-Commit - 2");
-        log();*/
-        global_log();
+        log();
+        add("test -3");
+        commit("testCommit");
+        find("test");*/
+        init();
+        add("testforAdd");
+        commit("testCommit");
+        add("testforAdd-2");
+        commit("test-Commit - 2");
+        add("test -3");
+        rm("testforAdd-2");
+        status();
 
     }
 
