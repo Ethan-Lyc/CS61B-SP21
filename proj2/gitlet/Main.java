@@ -1,7 +1,7 @@
 package gitlet;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author TODO
+ *  @author Yicheng Liao
  */
 public class Main {
 
@@ -9,14 +9,13 @@ public class Main {
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) {
-        // TODO: what if args is empty?
-        if(args.length == 0) {
+        if (args.length == 0) {
             System.out.println("Please enter a command.");
             System.exit(0);
         }
         Repository repo = new Repository();
         String firstArg = args[0];
-        switch(firstArg) {
+        switch (firstArg) {
             case "init":
                 // handle the `init` command
                 repo.checkCommandLength(args.length, 1);
@@ -46,7 +45,7 @@ public class Main {
             case "global-log":
                 repo.checkCommandLength(args.length, 1);
                 repo.checkIfInitDirectoryExists();
-                repo.global_log();
+                repo.globalLog();
                 break;
             default:
                 System.out.println("No command with that name exists.");

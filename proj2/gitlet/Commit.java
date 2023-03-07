@@ -1,6 +1,5 @@
 package gitlet;
 
-// TODO: any imports you need here
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -9,14 +8,14 @@ import java.util.*;
 import static gitlet.Utils.sha1;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *
  *  does at a high level.
  *
  *  @author Yicheng Liao
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
+     *
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -112,7 +111,8 @@ public class Commit implements Serializable {
         sb.append("===\n");
         sb.append("commit " + this.id + "\n");
         if (parents.size() == 2) {
-            sb.append("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7) + "\n");
+            sb.append("Merge: " + parents.get(0).substring(0, 7) + " "
+                    + parents.get(1).substring(0, 7) + "\n");
         }
         sb.append("Date: " + this.getDateString() + "\n");
         sb.append(this.message + "\n\n");
