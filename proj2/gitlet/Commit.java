@@ -2,12 +2,11 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.io.File;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import static gitlet.Utils.join;
+import static gitlet.Utils.sha1;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -25,76 +24,98 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
+    /**
+     *
+     * List all instance variables of the Commit class here with a useful
+     * comment above them describing what that variable represents and how that
+     * variable is used. We've provided one example for `message`.
+     */
+
+    /** The message of this Commit. */
     private String message;
 
-    private Map<String, String> pathToBlobID = new HashMap<>();
+    /** The timestamp of this Commit. */
+    private Date timestamp;
 
     private List<String> parents;
 
-    private Date currentTime;
+    /** The files this Commit track. */
+    // filename, blobsID
+    private HashMap<String, String> blobs;
 
     private String id;
 
-    private File commitSaveFileName;
-
-    private String timeStamp;
-
-    public Commit(String message, Map<String, String> pathToBlobID, List<String> parents) {
-        this.message = message;
-        this.pathToBlobID = pathToBlobID;
-        this.parents = parents;
-        this.currentTime = new Date();
-        this.timeStamp = dateToTimeStamp(this.currentTime);
-        this.id = generateID();
-        this.commitSaveFileName = generateFileName();
-    }
-
+    /**
+     * initial commit.
+     */
     public Commit() {
-        this.currentTime = new Date(0);
-        this.timeStamp = dateToTimeStamp(this.currentTime);
         this.message = "initial commit";
-        this.pathToBlobID = new HashMap<>();
-        this.parents = new ArrayList<>();
-        this.id = generateID();
-        this.commitSaveFileName = generateFileName();
+        this.timestamp = new Date(0);
+        this.id = sha1(message, timestamp.toString());
+        this.parents = new LinkedList<>();
+        this.blobs = new HashMap<>();
     }
 
-    private static String dateToTimeStamp(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
-        return dateFormat.format(date);
+    public Commit(String message, List<Commit> parents, Stage stage) {
+        this.message = message;
+        this.timestamp = new Date();
+        this.parents = new ArrayList<>();
+        for (Commit p : parents) {
+            this.parents.add(p.getID());
+        }
+        // using first parent blobs
+        this.blobs = parents.get(0).getBlobs();
+
+        for (Map.Entry<String, String> item : stage.getAdded().entrySet()) {
+            String filename = item.getKey();
+            String blobId = item.getValue();
+            blobs.put(filename, blobId);
+        }
+        for (String filename : stage.getRemoved()) {
+            blobs.remove(filename);
+        }
+
+        this.id = sha1(message, timestamp.toString(), parents.toString(), blobs.toString());
     }
-    private String generateID() {
-        return Utils.sha1(generateTimeStamp(), message, parents.toString(), pathToBlobID.toString());
-    }
-    private String generateTimeStamp() {
-        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.CHINA);
-        return dateFormat.format(currentTime);
-    }
-    private File generateFileName() {
-        return join(Repository.OBJECTS_DIR, id);
-    }
-    public void save(){
-        Utils.writeObject(commitSaveFileName, this);
-    }
-    public String getMessage() {
-        return message;
-    }
-    public Map<String, String> getPathToBlobID() {
-        return pathToBlobID;
-    }
+
     public List<String> getParents() {
         return parents;
     }
-    public Date getCurrentTime() {
-        return currentTime;
+
+    public String getFirstParentId() {
+        if (parents.isEmpty()) {
+            return "null";
+        }
+        return parents.get(0);
     }
-    public String getId() {
+
+    public String getID() {
         return id;
     }
-    public File getCommitSaveFileName() {
-        return commitSaveFileName;
+
+    public String getDateString() {
+        // Thu Nov 9 20:00:05 2017 -0800
+        DateFormat df = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
+        return df.format(timestamp);
     }
-    public String getTimeStamp() {
-        return timeStamp;
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public HashMap<String, String> getBlobs() {
+        return this.blobs;
+    }
+
+    public String getCommitAsString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("===\n");
+        sb.append("commit " + this.id + "\n");
+        if (parents.size() == 2) {
+            sb.append("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7) + "\n");
+        }
+        sb.append("Date: " + this.getDateString() + "\n");
+        sb.append(this.message + "\n\n");
+        return sb.toString();
     }
 }

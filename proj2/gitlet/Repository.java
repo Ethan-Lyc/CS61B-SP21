@@ -1,14 +1,19 @@
 package gitlet;
 
-import org.checkerframework.checker.units.qual.C;
+
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import static gitlet.Utils.*;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 // TODO: any imports you need here
 
@@ -28,57 +33,110 @@ public class Repository {
      */
 
     /** The current working directory. */
-    public static final File CWD = new File(System.getProperty("user.dir"));
-    /** The .gitlet directory. */
-    public static final File GITLET_DIR = join(CWD, ".gitlet");
-    public static final File REFS_DIR = join(GITLET_DIR, "refs");
-    /** The staging area. */
-    public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
-    public static final File HEADS_DIR = join(REFS_DIR, "heads");
-    public static final File HEAD_FILE = join(GITLET_DIR, "HEAD");
-    public static final File REMOTES_DIR = join(REFS_DIR, "remotes");
-    public static final File STAGE = join(GITLET_DIR, "stage");
-    public static final File STAGING_DIR = join(GITLET_DIR, "staging");
-    public static Commit currCommit;
+    public File CWD;
 
+    public Repository() {
+        this.CWD = new File(System.getProperty("user.dir"));
+        configDIRS();
+    }
 
-    /* TODO: fill in the rest of this class. */
-    public static void init(){
-        if(GITLET_DIR.exists()){
-            System.out.println("A gitlet version-control system already exists in the current directory.");
+/*    public Repository(String cwd) {
+        this.CWD = new File(cwd);
+        configDIRS();
+    }*/
+
+    private void configDIRS() {
+        this.GITLET_DIR = join(CWD, ".gitlet");
+        this.STAGING_DIR = join(GITLET_DIR, "staging");
+        this.STAGE = join(GITLET_DIR, "stage");
+        this.BLOBS_DIR = join(GITLET_DIR, "blobs");
+        this.COMMITS_DIR = join(GITLET_DIR, "commits");
+        this.REFS_DIR = join(GITLET_DIR, "refs");
+        this.HEADS_DIR = join(REFS_DIR, "heads");
+        this.REMOTES_DIR = join(REFS_DIR, "remotes");
+        this.HEAD = join(GITLET_DIR, "HEAD");
+        this.CONFIG = join(GITLET_DIR, "config");
+    }
+
+    /**
+     * The .gitlet directory.
+     * <p>
+     * .gitlet
+     * -- staging
+     * -- [stage]
+     * -- blobs
+     * -- commits
+     * -- refs
+     *  -- heads -> [master][branch name]
+     *  -- remotes
+     *      -- [remote name] ->[branch name]
+     * -- [HEAD]
+     * -- [config]
+     */
+    public File GITLET_DIR;
+
+    /**
+     * The staging directory, restores staging Blobs
+     */
+    public File STAGING_DIR;
+
+    /**
+     * The Stage Object
+     */
+    public File STAGE;
+
+    /**
+     * The Objects directory, stores committed blobs & commits
+     */
+    public File BLOBS_DIR;
+    public File COMMITS_DIR;
+
+    /**
+     * The branches directory
+     */
+    public File REFS_DIR;
+    public File HEADS_DIR;
+    public File REMOTES_DIR;
+    /**
+     * stores current branch's name if it points to tip
+     */
+    public File HEAD;
+    // Note that in Gitlet, there is no way to be in a detached head state
+
+    public File CONFIG;
+    public void init(){
+        //Failure cases
+        if(GITLET_DIR.exists() && GITLET_DIR.isDirectory()){
+            System.out.println("A Gitlet version-control system already exists in the current directory");
             System.exit(0);
         }
+        //create directories
         GITLET_DIR.mkdir();
-        OBJECTS_DIR.mkdir();
+        STAGING_DIR.mkdir();
+        writeObject(STAGE,new Stage());
+        BLOBS_DIR.mkdir();
+        COMMITS_DIR.mkdir();
         REFS_DIR.mkdir();
         HEADS_DIR.mkdir();
+        REMOTES_DIR.mkdir();
 
-        initCommit();
-        initHead();
-        initHeads();
+        //initial Commit
+        Commit initialCommit = new Commit();
+        writeCommitToFile(initialCommit);
+        String id = initialCommit.getID();
+
+        //create branch: master
+        String branchName = "master";
+        File master = join(HEADS_DIR,branchName);
+        writeContents(master,id);
+
+        //Create Head
+        writeContents(HEAD,branchName);
+
+        writeContents(CONFIG,"");
+
     }
-    public static void initCommit(){
-        Commit initCommit = new Commit();
-        currCommit = initCommit;
-        initCommit.save();
-    }
-    public static void initHead(){
-        writeContents(HEAD_FILE, "master");
-    }
-    public static void initHeads(){
-        File HEADS_FILE = join(HEADS_DIR, "master");
-        writeContents(HEADS_FILE, currCommit.getId());
-    }
-    @Test
-    public void testInit(){
-        init();
-    }
-    public static void check(){
-        if(!GITLET_DIR.exists()){
-            System.out.println("Not in an initialized Gitlet directory.");
-            System.exit(0);
-        }
-    }
+
     /**
      * 1. Staging an already-staged file overwrites the previous entry in the staging area with the new contents.
      * 2. If the current working version of the file is identical to the version in the current commit,
@@ -86,60 +144,141 @@ public class Repository {
      * (as can happen when a file is changed, added, and then changed back to it’s original version).
      * 3. The file will no longer be staged for removal (see gitlet rm), if it was at the time of the command.
      *
-     * @param fileName
+     * @param filename
      */
-    public void add(String fileName){
-        check();
-        File file = getFileFromCWD(fileName);
+    public void add(String filename){
+        File file = join(CWD,filename);
         if(!file.exists()){
             System.out.println("File does not exist.");
             System.exit(0);
         }
+
         Commit head = getHead();
         Stage stage = readStage();
-        String headId = head.getPathToBlobID().getOrDefault(file.getPath(),"");
-        String stageId = stage.getAdded().getOrDefault(fileName, "");
-        Blob blob = new Blob(file);
-        String blobId = blob.getBlobID();
-    }
 
-    private Stage readStage() {
-        return readObject(STAGE, Stage.class);
-    }
+        String headId = head.getBlobs().getOrDefault(filename,"");
+        String stageId = stage.getAdded().getOrDefault(filename,"");
 
-    public void addToStage(Blob blob){
+        Blob blob = new Blob(filename,CWD);
+        String blobId = blob.getId();
 
+        if(blobId.equals(headId)){
+            //no need to add the file
+            //del the file from staging area
+            join(STAGING_DIR,stageId).delete();
+            stage.getAdded().remove(stageId);
+            stage.getRemoved().remove(stageId);
+            writeStage(stage);
+        }else if(!blobId.equals(stageId)){
+            //update staging area
+            if(!stageId.equals("")){
+                join(STAGING_DIR,stageId).delete();
+            }
 
-    }
-    public File getFileFromCWD(String fileName){
-        return join(CWD, fileName);
-    }
-    private String getHeadBranchName() {
-        return readContentsAsString(HEAD_FILE);
-    }
-    private Commit getHead(){
-        String headBranchName = getHeadBranchName();
-        File branchFile = getBranchFile(headBranchName);
-        Commit head = getCommitFromBranchFile(branchFile);
-        return head;
-    }
+            writeObject(join(STAGING_DIR,blobId),blob);
+            //change stage added files
+            stage.addFile(filename,blobId);
+            writeStage(stage);
 
-    private Commit getCommitFromBranchFile(File branchFile) {
-        String commitId = readContentsAsString(branchFile);
-        return getCommitFromId(commitId);
-    }
-
-    private Commit getCommitFromId(String commitId) {
-        File commitFile = join(OBJECTS_DIR, commitId);
-        if(commitId.equals("null") || !commitFile.exists()){
-            return null;
         }
-        return readObject(commitFile, Commit.class);
+    }
+    /*Saves a snapshot of tracked files in the current commit and staging area so they can
+     be restored at a later time, creating a new commit. The commit is said to be tracking
+      the saved files. By default, each commit’s snapshot of files will be exactly the same
+       as its parent commit’s snapshot of files; it will keep versions of files exactly as
+       they are, and not update them. A commit will only update the contents of files it is
+       tracking that have been staged for addition at the time of commit, in which case the
+       commit will now include the version of the file that was staged instead of the version
+       it got from its parent. A commit will save and start tracking any files that were staged
+       for addition but weren’t tracked by its parent. Finally, files tracked in the current commit
+        may be untracked in the new commit as a result being staged for removal by the rm command (below).
+        */
+    public void commit(String message){
+        if (message.equals("")) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
+
+        Commit head = getHead();
+        commitWith(message, List.of(head));
+    }
+
+    private void commitWith(String message, List<Commit> parents) {
+        Stage stage = readStage();
+        //if no files have been staged, abort.
+        if(stage.isEmpty()){
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        }
+        Commit commit = new Commit(message,parents,stage);
+        clearstage(stage);
+        writeCommitToFile(commit);
+
+        String commitId = commit.getID();
+        String branchName = getBranchName();
+        File branch = getBranchFile(branchName);
+        writeContents(branch,commitId);
     }
 
     private File getBranchFile(String branchName) {
-        return join(HEADS_DIR, branchName);
+        return join(HEADS_DIR,branchName);
+    }
+
+    private void clearstage(Stage stage) {
+        File[] files = STAGING_DIR.listFiles();
+        if(files == null){
+            return;
+        }
+        Path targetDir = BLOBS_DIR.toPath();
+        for (File file : files) {
+            Path source = file.toPath();
+            try {
+                Files.move(source,targetDir.resolve(source.getFileName()),REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        writeStage(new Stage());
+
+    }
+
+    private void writeStage(Stage stage) {
+        writeObject(STAGE,stage);
     }
 
 
+    private Stage readStage() {
+        Stage stage = readObject(STAGE, Stage.class);
+        return stage;
+    }
+
+    private Commit getHead() {
+        String branchName = getBranchName();
+        Commit head = getCommitFromBranchName(branchName);
+        return head;
+    }
+
+    private Commit getCommitFromBranchName(String branchName) {
+        File branch = join(HEADS_DIR,branchName);
+        String commitId = readContentsAsString(branch);
+        Commit commit = readObject(join(COMMITS_DIR,commitId),Commit.class);
+        return commit;
+    }
+
+    private String getBranchName() {
+        String branchName = readContentsAsString(HEAD);
+        return branchName;
+    }
+
+    @Test
+    public void test(){
+        init();
+        add("testforAdd");
+        commit("test-Commit");
+    }
+
+    private void writeCommitToFile(Commit commit) {
+        File file = join(COMMITS_DIR, commit.getID());
+        writeObject(file, commit);
+    }
 }

@@ -16,7 +16,7 @@ public class Stage implements Serializable {
     }
     public void addFile(String filename, String blobID) {
         added.put(filename, blobID);
-        removed.add(filename);
+        removed.remove(filename);
     }
     public boolean isEmpty() {
         return added.isEmpty() && removed.isEmpty();
@@ -31,10 +31,10 @@ public class Stage implements Serializable {
     public HashSet<String> getRemoved() {
         return removed;
     }
-    public ArrayList<String> getAddedFiles() {
-        ArrayList<String> addedFiles = new ArrayList<>();
-        addedFiles.addAll(added.keySet());
-        addedFiles.addAll(removed);
-        return addedFiles;
+    public ArrayList<String> getStagedFilename() {
+        ArrayList<String> res = new ArrayList<>();
+        res.addAll(added.keySet());
+        res.addAll(removed);
+        return res;
     }
 }

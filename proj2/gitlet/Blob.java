@@ -2,59 +2,45 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
-import static gitlet.Repository.OBJECTS_DIR;
 import static gitlet.Utils.*;
 
 public class Blob implements Serializable {
+    private String filename;
+    private byte[] content;
     private String id;
 
-    private byte[] bytes;
-    /* The Original File that in the working directory */
-    private File fileName;
-
-    private String filePath;
-    /* The blobname of  that turn the original File in the directory into a blob*/
-    private File blobSaveFileName;
-    
-    public Blob(File fileName) {
-        this.fileName = fileName;
-        this.bytes = Utils.readContents(fileName);
-        this.filePath = fileName.getPath();
-        this.id = generateID();
-        this.blobSaveFileName = generateFileName();
-
+    public Blob(String filename, File CWD) {
+        this.filename = filename;
+        File file = join(CWD, filename);
+        if (file.exists()) {
+            this.content = readContents(file);
+            this.id = sha1(filename, content);
+        } else {
+            this.content = null;
+            this.id = sha1(filename);
+        }
     }
-    public String getBlobID() {
+
+    public boolean exists() {
+        return this.content != null;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public String getContentAsString() {
+        return new String(content, StandardCharsets.UTF_8);
+    }
+
+    public String getId() {
         return id;
-    }
-
-    public byte[] getBytes() {
-        return bytes;
-    }
-
-    public String getPath() {
-        return filePath;
-    }
-
-    public File getBlobSaveFileName() {
-        return blobSaveFileName;
-    }
-
-    public String getFileName(){
-        return fileName.getName();
-    }
-
-    private File generateFileName() {
-        return Utils.join(OBJECTS_DIR, this.id);
-
-    }
-
-    private String generateID() {
-        return Utils.sha1(this.bytes,filePath);
-    }
-    public void save() {
-        writeObject(blobSaveFileName, this);
     }
 
 }

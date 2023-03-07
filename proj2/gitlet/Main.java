@@ -14,6 +14,7 @@ public class Main {
             System.out.println("Please enter a command.");
             System.exit(0);
         }
+        Repository repo = new Repository();
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
