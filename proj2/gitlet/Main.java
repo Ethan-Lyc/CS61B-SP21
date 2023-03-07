@@ -18,12 +18,36 @@ public class Main {
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
-                // TODO: handle the `init` command
+                // handle the `init` command
+                repo.checkCommandLength(args.length, 1);
+                repo.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                // handle the `add [filename]` command
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
+            case "rm":
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.rm(args[1]);
+                break;
+            case "commit":
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.commit(args[1]);
+                break;
+            case "log":
+                repo.checkCommandLength(args.length, 1);
+                repo.checkIfInitDirectoryExists();
+                repo.log();
+                break;
+            case "global-log":
+                repo.checkCommandLength(args.length, 1);
+                repo.checkIfInitDirectoryExists();
+                repo.global_log();
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);

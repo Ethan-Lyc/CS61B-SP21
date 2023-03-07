@@ -239,6 +239,33 @@ public class Repository {
         }
         writeStage(stage);
     }
+    public void log(){
+        StringBuilder sb = new StringBuilder();
+        Commit commit = getHead();
+        while(commit != null){
+            sb.append(commit.getCommitAsString());
+            commit = getCommitFromId(commit.getFirstParentId());
+        }
+        System.out.println(sb);
+    }
+    public void global_log(){
+        StringBuilder sb = new StringBuilder();
+        List<String> filenames = plainFilenamesIn(COMMITS_DIR);
+        for (String filename : filenames) {
+            Commit commit = getCommitFromId(filename);
+            sb.append(commit.getCommitAsString());
+        }
+        System.out.println(sb);
+    }
+
+    private Commit getCommitFromId(String firstParentId) {
+        File commitFile = join(COMMITS_DIR,firstParentId);
+        if(firstParentId.equals("null") || !commitFile.exists()){
+            return null;
+        }
+        Commit commit = readObject(commitFile, Commit.class);
+        return commit;
+    }
 
     private void commitWith(String message, List<Commit> parents) {
         Stage stage = readStage();
@@ -314,8 +341,8 @@ public class Repository {
         commit("testCommit");
         add("testforAdd-2");
         commit("test-Commit - 2");
-        add("testforAdd");*/
-        rm("testforAdd");
+        log();*/
+        global_log();
 
     }
 
@@ -323,4 +350,21 @@ public class Repository {
         File file = join(COMMITS_DIR, commit.getID());
         writeObject(file, commit);
     }
+    void checkCommandLength(int actual, int expected) {
+        if (actual != expected) {
+            messageIncorrectOperands();
+        }
+    }
+    void messageIncorrectOperands() {
+        System.out.println("Incorrect operands.");
+        System.exit(0);
+    }
+
+    public void checkIfInitDirectoryExists() {
+        if (!GITLET_DIR.isDirectory()) {
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
+    }
+
 }
