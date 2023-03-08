@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
 import static gitlet.Utils.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -295,6 +295,177 @@ public class Repository {
 
         System.out.println(sb);
     }
+    /**
+     * java gitlet.Main checkout -- [file name]
+     */
+    public void checkoutFileFromHead(String fileName) {
+        Commit head = getHead();
+        checkoutFileFromCommit(head, fileName);
+    }
+
+    /*
+    * java gitlet.Main checkout [commit id] -- [file name]
+    */
+    public void checkoutFileFromCommitId(String commitId, String fileName) {
+        Commit commit = getCommitFromIdHelper(commitId);
+        checkoutFileFromCommit(commit, fileName);
+    }
+    /*
+    * java gitlet.Main checkout [branch name]
+    */
+    public void checkoutFromBranch(String branchName) {
+        File branchFile = getBranchFile(branchName);
+        if (branchFile == null || !branchFile.exists()) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        }
+
+        String headBranchName = getHeadBranchName();
+        if (headBranchName.equals(branchName)) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+
+        Commit commit = getCommitFromBranchName(branchName);
+
+        //If a working file is untracked in the current branch
+        //and would be overwritten by the checkout
+        validUntrackedFile(commit.getBlobs());
+
+        //Any files that are tracked in the current branch but are
+        // not present in the checked-out branch are deleted.
+        clearStage(readStage());
+        replaceWorkingPlaceWithCommit(commit);
+
+
+
+
+
+        // change HEAD point to this branch
+        writeContents(HEAD, branchName);
+    }
+
+    private void replaceWorkingPlaceWithCommit(Commit commit) {
+        File[] files = CWD.listFiles();
+        for (File file : files) {
+            file.delete();
+        }
+        HashMap<String, String> blobs = commit.getBlobs();
+        for (String fileName : blobs.keySet()) {
+            String blobId = blobs.get(fileName);
+            File currentFile = join(CWD, fileName);
+            Blob blob = getBlobFromBlobId(blobId);
+            writeObject(currentFile, blob);
+        }
+    }
+
+
+    private void clearStage(Stage readStage) {
+        File[] files = STAGING_DIR.listFiles();
+        if (files == null) {
+            return;
+        }
+        Path targetDir = BLOBS_DIR.toPath();
+        for (File file : files) {
+            Path source = file.toPath();
+            try {
+                Files.move(source, targetDir.resolve(source.getFileName()), REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        writeStage(new Stage());
+
+    }
+
+
+    /**
+     * If a working file is untracked in the current branch
+     * and would be overwritten by the blobs(checkout).
+     */
+    private void validUntrackedFile(HashMap<String, String> blobs) {
+        List<String> untrackedFiles = getUntrackedFiles();
+        if (untrackedFiles.isEmpty()) {
+            return;
+        }
+
+        for (String untrackedFile : untrackedFiles) {
+            String blobId = new Blob(untrackedFile, CWD).getId();
+            String checkoutFileId = blobs.getOrDefault(untrackedFile, "");
+            if (!blobId.equals(checkoutFileId)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+    }
+
+
+    private List<String> getUntrackedFiles() {
+        List<String> res = new ArrayList<>();
+        List<String> stageFiles = readStage().getStagedFilename();
+        Set<String> headFiles = getHead().getBlobs().keySet();
+        for (String s : plainFilenamesIn(CWD)) {
+            if (!stageFiles.contains(s) && !headFiles.contains(s)) {
+                res.add(s);
+            }
+        }
+        Collections.sort(res);
+        return res;
+    }
+
+    private List<File> getCommitFiles(Commit commit) {
+        HashMap<String, String> blobs = commit.getBlobs();
+        List<File> files = new ArrayList<>();
+        for (String fileName : blobs.keySet()) {
+            String blobId = blobs.get(fileName);
+            Blob blob = getBlobFromBlobId(blobId);
+            File blobFile = join(CWD, fileName);
+            writeObject(blobFile, blob);
+            files.add(blobFile);
+        }
+        return files;
+    }
+
+    private Blob getBlobFromBlobId(String blobId) {
+        File blobFile = join(BLOBS_DIR, blobId);
+        Blob blob = readObject(blobFile, Blob.class);
+        return blob;
+    }
+
+
+    private Commit getCommitFromIdHelper(String commitId) {
+        Commit commit = getCommitFromId(commitId);
+        if (commit.equals(null)) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        return commit;
+    }
+
+
+    private void checkoutFileFromCommit(Commit head, String filename) {
+        String blobId = head.getBlobs().getOrDefault(filename, "");
+        checkoutFileFromBlobId(blobId);
+    }
+
+    private void checkoutFileFromBlobId(String blobId) {
+        if (blobId.equals("")) {
+            System.out.println("File does not exist in that commit.");
+            System.exit(0);
+        }
+        File blobFile = join(BLOBS_DIR, blobId);
+        Blob blob = readObject(blobFile, Blob.class);
+        checkoutFileFromBlob(blob);
+    }
+
+    private void checkoutFileFromBlob(Blob blob) {
+        String fileName = blob.getFilename();
+        File file = join(CWD, fileName);
+        writeContents(file, blob);
+
+    }
+
 
     private Commit getCommitFromId(String firstParentId) {
         File commitFile = join(COMMITS_DIR, firstParentId);

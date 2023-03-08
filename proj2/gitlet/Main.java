@@ -47,6 +47,8 @@ public class Main {
                 repo.checkIfInitDirectoryExists();
                 repo.globalLog();
                 break;
+            case "checkout":
+
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);
