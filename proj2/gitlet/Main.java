@@ -48,6 +48,25 @@ public class Main {
                 repo.globalLog();
                 break;
             case "checkout":
+                int len = args.length;  // 2 3 4
+                if (len < 2 || len > 4) {
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
+                repo.checkIfInitDirectoryExists();
+                if (len == 2) {
+                    // java gitlet.Main checkout [branch name]
+                    repo.checkoutFromBranch(args[1]);
+                } else if (len == 3) {
+                    // java gitlet.Main checkout -- [file name]
+                    repo.checkEqual(args[1], "--");
+                    repo.checkoutFileFromHead(args[2]);
+                } else if (len == 4) {
+                    // java gitlet.Main checkout [commit id] -- [file name]
+                    repo.checkEqual(args[2], "--");
+                    repo.checkoutFileFromCommitId(args[1], args[3]);
+                }
+                break;
 
             default:
                 System.out.println("No command with that name exists.");

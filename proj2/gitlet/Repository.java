@@ -586,4 +586,9 @@ public class Repository {
         }
     }
 
+    public void checkEqual(String arg, String s) {
+        if (!arg.equals(s)) {
+            messageIncorrectOperands();
+        }
+    }
 }
