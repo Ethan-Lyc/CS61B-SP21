@@ -1,7 +1,8 @@
 package gitlet;
 
 
-import org.junit.Test;
+
+
 
 import java.io.File;
 import java.io.IOException;
@@ -503,7 +504,7 @@ public class Repository {
     private void checkoutFileFromBlob(Blob blob) {
         String fileName = blob.getFilename();
         File file = join(CWD, fileName);
-        writeContents(file, blob);
+        writeContents(file, blob.getContent());
 
     }
 
@@ -584,20 +585,7 @@ public class Repository {
         return branchName;
     }
 
-    @Test
     public void test() {
-        /*        init();
-        add("testforAdd");
-        commit("testCommit");
-        add("testforAdd-2");
-        commit("test-Commit - 2");
-        log();
-        add("test -3");
-        commit("testCommit");
-        find("test");*/
-        checkoutFromBranch("master");
-        status();
-
 
     }
 
