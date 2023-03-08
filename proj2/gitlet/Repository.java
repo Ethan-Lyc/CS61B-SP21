@@ -338,11 +338,52 @@ public class Repository {
         replaceWorkingPlaceWithCommit(commit);
 
 
-
-
-
         // change HEAD point to this branch
         writeContents(HEAD, branchName);
+    }
+
+
+
+    /*
+     * Creates a new branch with the given name, and points it at
+     * the current head commit. A branch is nothing more than a name
+     *  for a reference (a SHA-1 identifier) to a commit node. This
+     *   command does NOT immediately switch to the newly created
+     *   branch (just as in real Git). Before you ever call branch,
+     *   your code should be running with a default branch called
+     *   “master”.
+     * */
+    public void createbranch(String branchName) {
+        File branchFile = join(HEADS_DIR, branchName);
+
+        if (branchFile.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        Commit headCommit = getHead();
+        writeContents(branchFile, headCommit.getID());
+    }
+
+    public void removeBranch(String branchName) {
+        File branchFile = join(HEADS_DIR, branchName);
+        if (!branchFile.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        String currentBranch = readContentsAsString(HEAD);
+
+        if (branchName.equals(currentBranch)) {
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        removeBranchFile(branchName);
+
+
+    }
+
+    private void removeBranchFile(String branchName) {
+        File branchFile = join(HEADS_DIR, branchName);
+        branchFile.delete();
     }
 
     private void replaceWorkingPlaceWithCommit(Commit commit) {
@@ -554,14 +595,9 @@ public class Repository {
         add("test -3");
         commit("testCommit");
         find("test");*/
-        init();
-        add("testforAdd");
-        commit("testCommit");
-        add("testforAdd-2");
-        commit("test-Commit - 2");
-        add("test -3");
-        rm("testforAdd-2");
+        checkoutFromBranch("master");
         status();
+
 
     }
 

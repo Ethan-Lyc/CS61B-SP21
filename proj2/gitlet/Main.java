@@ -67,7 +67,16 @@ public class Main {
                     repo.checkoutFileFromCommitId(args[1], args[3]);
                 }
                 break;
-
+            case "branch":
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.createbranch(args[1]);
+                break;
+            case "rm-branch":
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.removeBranch(args[1]);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);
