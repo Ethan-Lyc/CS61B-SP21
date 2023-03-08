@@ -4,6 +4,11 @@ package gitlet;
 
 
 
+
+
+
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -163,7 +168,7 @@ public class Repository {
             //del the file from staging area
             join(STAGING_DIR, stageId).delete();
             stage.getAdded().remove(stageId);
-            stage.getRemoved().remove(stageId);
+            stage.getRemoved().remove(filename);
             writeStage(stage);
         } else if (!blobId.equals(stageId)) {
             //update staging area
@@ -224,8 +229,7 @@ public class Repository {
         //file is staged, remove it
         if (!stageId.equals("")) {
             stage.getAdded().remove(fileName);
-        }
-        if (!headId.equals("")) {
+        } else {
             stage.getRemoved().add(fileName);
         }
         if (blob.exists() && blobId.equals(headId)) {
@@ -294,6 +298,11 @@ public class Repository {
         }
         sb.append("\n");
 
+        sb.append("=== Modifications Not Staged For Commit ===" + "\n");
+        sb.append("\n");
+
+        sb.append("=== Untracked Files ===" + "\n");
+
         System.out.println(sb);
     }
     /**
@@ -335,7 +344,7 @@ public class Repository {
 
         //Any files that are tracked in the current branch but are
         // not present in the checked-out branch are deleted.
-        clearStage(readStage());
+        clearstage(readStage());
         replaceWorkingPlaceWithCommit(commit);
 
 
@@ -382,6 +391,23 @@ public class Repository {
 
     }
 
+    /* java gitlet.Main reset [commit id] */
+    public void reset(String commitId) {
+        Commit commit = getCommitFromIdHelper(commitId);
+
+        //If a working file is untracked in the current branch
+        //and would be overwritten by the checkout
+        validUntrackedFile(commit.getBlobs());
+
+        //Any files that are tracked in the current branch but are
+        // not present in the checked-out branch are deleted.
+        clearstage(readStage());
+        replaceWorkingPlaceWithCommit(commit);
+
+        String curHead = readContentsAsString(HEAD);
+        File headfile = join(HEADS_DIR,curHead);
+        writeContents(headfile,commit.getID());
+    }
     private void removeBranchFile(String branchName) {
         File branchFile = join(HEADS_DIR, branchName);
         branchFile.delete();
@@ -402,24 +428,6 @@ public class Repository {
     }
 
 
-    private void clearStage(Stage readStage) {
-        File[] files = STAGING_DIR.listFiles();
-        if (files == null) {
-            return;
-        }
-        Path targetDir = BLOBS_DIR.toPath();
-        for (File file : files) {
-            Path source = file.toPath();
-            try {
-                Files.move(source, targetDir.resolve(source.getFileName()), REPLACE_EXISTING);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        writeStage(new Stage());
-
-    }
 
 
     /**
@@ -585,7 +593,32 @@ public class Repository {
         return branchName;
     }
 
+    @Test
     public void test() {
+        init();
+        add("wug.txt");
+        Stage stage = readStage();
+        System.out.println(stage.getRemoved());
+        add("notwug.txt");
+        stage = readStage();
+        System.out.println(stage.getRemoved());
+        commit("two files");
+        stage = readStage();
+        System.out.println(stage.getRemoved());
+        rm("wug.txt");
+        stage = readStage();
+        System.out.println(stage.getRemoved());
+        File file = join(CWD,"wug.txt");
+        if(file.exists()){
+            System.out.println("should not exist");
+        }
+        System.out.println("add a new txt file");
+
+        add("wug.txt");
+        stage = readStage();
+        System.out.println(stage.getRemoved());
+        status();
+
 
     }
 

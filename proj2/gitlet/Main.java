@@ -37,6 +37,11 @@ public class Main {
                 repo.checkIfInitDirectoryExists();
                 repo.commit(args[1]);
                 break;
+            case "status":
+                repo.checkCommandLength(args.length, 1);
+                repo.checkIfInitDirectoryExists();
+                repo.status();
+                break;
             case "log":
                 repo.checkCommandLength(args.length, 1);
                 repo.checkIfInitDirectoryExists();
@@ -76,6 +81,11 @@ public class Main {
                 repo.checkCommandLength(args.length, 2);
                 repo.checkIfInitDirectoryExists();
                 repo.removeBranch(args[1]);
+                break;
+            case "reset":
+                repo.checkCommandLength(args.length,2);
+                repo.checkIfInitDirectoryExists();
+                repo.reset(args[1]);
                 break;
             default:
                 System.out.println("No command with that name exists.");
