@@ -432,9 +432,75 @@ public class Repository {
 
     }
 
-    private void mergeWithLCA(Commit splitPoint, Commit head, Commit other) {
-        Set<String> filenames = getAllFileNames(splitPoint, head, other);
+    private void mergeWithLCA(Commit lca, Commit head, Commit other) {
+        Set<String> filenames = getAllFileNames(lca, head, other);
 
+        List<String> remove = new LinkedList<>();
+        List<String> rewrite = new LinkedList<>();
+        List<String> conflict = new LinkedList<>();
+
+        for (String filename : filenames) {
+            //blobId
+            String lId = lca.getBlobs().getOrDefault(filename,"");
+            String hId = head.getBlobs().getOrDefault(filename,"");
+            String oId = other.getBlobs().getOrDefault(filename,"");
+
+            boolean modifiedInHead = hId.equals(lId);
+            boolean modifiedInOther = oId.equals(lId);
+
+            if (modifiedInOther && !modifiedInHead) {
+                rewrite.add(filename);
+            }
+            if (modifiedInHead && !modifiedInOther) {
+                continue;
+            }
+            if (modifiedInHead && modifiedInOther) {
+               if (hId.equals(oId)) {
+                   continue;
+               } else {
+                   conflict.add(filename);
+               }
+            }
+            if (hId.equals(lId) && hId.equals("") && !oId.equals("")) {
+                rewrite.add(filename);
+            }
+            if (modifiedInHead && oId.equals("")) {
+                remove.add(filename);
+            }
+
+
+        }
+
+
+        // If an untracked file in the current commit would be overwritten or deleted by the merge
+        List<String> untrackedFiles = getUntrackedFiles();
+        for (String filename : untrackedFiles) {
+            if (remove.contains(filename) || rewrite.contains(filename) || conflict.contains(filename)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+            }
+        }
+
+
+        if (!remove.isEmpty()) {
+            for (String filename : remove) {
+                rm(filename);
+            }
+        }
+
+        if (!rewrite.isEmpty()) {
+            for (String fileName : rewrite) {
+                String oId = other.getBlobs().get(fileName);
+                Blob blob = getBlobFromBlobId(oId);
+                checkoutFileFromBlob(blob);
+                //add the file
+                add(fileName);
+            }
+        }
+
+        if (!conflict.isEmpty()) {
+
+        }
 
     }
 
