@@ -8,6 +8,7 @@ package gitlet;
 
 
 
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -405,8 +406,105 @@ public class Repository {
 
 
     public void merge(String branchName) {
+        checkIfUncommitted();
+        checkIfBranchExists(branchName);
+        if (branchName.equals(getHeadBranchName())) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+        File otherBranchFile = getBranchFile(branchName);
+
+        Commit head = getHead();
+        Commit other = getCommitFromBranchName(branchName);
+        Commit splitPoint = getLatestCommonAncestor(branchName);
+
+        if (splitPoint.equals(other)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        } else if (splitPoint.equals(head)) {
+            checkoutFromBranch(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            return;
+        }
+
+        //3.merge
+        mergeWithLCA(splitPoint, head, other);
 
     }
+
+    private void mergeWithLCA(Commit splitPoint, Commit head, Commit other) {
+        Set<String> filenames = getAllFileNames(splitPoint, head, other);
+
+
+    }
+
+    private Set<String> getAllFileNames(Commit splitPoint, Commit head, Commit other) {
+        Set<String> set = new HashSet<>();
+        for (String s : splitPoint.getBlobs().keySet()) {
+            set.add(s);
+        }
+        for (String s : head.getBlobs().keySet()) {
+            set.add(s);
+        }
+        for (String s : other.getBlobs().keySet()) {
+            set.add(s);
+        }
+
+    }
+
+    private Commit getLatestCommonAncestor(String branchName) {
+
+        Commit head = getHead();
+        Commit otherBranch = getCommitFromBranchName(branchName);
+
+        HashMap<String, Integer> currAncestor = dfsCurrentHead(head);
+        HashMap<String, Integer> otherAncestor = dfsCurrentHead(otherBranch);
+        String key = new String();
+        int depth = Integer.MAX_VALUE;
+        for (String parent : currAncestor.keySet()) {
+            if (otherAncestor.containsKey(parent)) {
+                if (currAncestor.get(parent) < depth) {
+                    depth = currAncestor.get(parent);
+                    key = parent;
+                }
+            }
+        }
+
+        return getCommitFromId(key);
+
+
+    }
+
+    private HashMap<String, Integer> dfsCurrentHead(Commit commit) {
+        HashMap<String, Integer> map = new HashMap<>();
+        Commit head = commit;
+        map.put(head.getID(), 0);
+        int depth = 1;
+        while (!head.getFirstParentId().equals("null")) {
+            String parentCommitId = head.getFirstParentId();
+            Commit parent = getCommitFromId(parentCommitId);
+            map.put(parentCommitId, depth);
+            depth += 1;
+            head = parent;
+        }
+        return map;
+    }
+
+    private void checkIfBranchExists(String branchName) {
+        File branchFile = getBranchFile(branchName);
+        if (!branchFile.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+    }
+    private void checkIfUncommitted() {
+        Stage stage = readStage();
+        if (!stage.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+        }
+    }
+
     private void removeBranchFile(String branchName) {
         File branchFile = join(HEADS_DIR, branchName);
         branchFile.delete();
@@ -594,9 +692,20 @@ public class Repository {
     }
 
 
+
     public void test() {
-        init();
-        createbranch("other");
+    /*        createbranch("second");
+        add("test -3");
+        commit("add test - 3");
+        HashMap<String,Integer> mapMaster = dfsCurrentHead(getHead());
+        HashMap<String,Integer> secondParents = dfsCurrentHead(getCommitFromBranchName("second"));
+        for (String s : mapMaster.keySet()) {
+            System.out.println("key == " + s + "depth = " + mapMaster.get(s));
+        }
+        System.out.println("\n");
+        for (String s : secondParents.keySet()) {
+            System.out.println("key == " + s + "depth = " + secondParents.get(s));
+        }*/
 
     }
 
