@@ -52,6 +52,11 @@ public class Main {
                 repo.checkIfInitDirectoryExists();
                 repo.globalLog();
                 break;
+            case "find":
+                repo.checkCommandLength(args.length, 2);
+                repo.checkIfInitDirectoryExists();
+                repo.find(args[1]);
+                break;
             case "checkout":
                 int len = args.length;  // 2 3 4
                 if (len < 2 || len > 4) {

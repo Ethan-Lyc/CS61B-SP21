@@ -7,7 +7,6 @@ package gitlet;
 
 
 
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -408,6 +407,11 @@ public class Repository {
         File headfile = join(HEADS_DIR,curHead);
         writeContents(headfile,commit.getID());
     }
+
+
+    public void merge(String branchName) {
+
+    }
     private void removeBranchFile(String branchName) {
         File branchFile = join(HEADS_DIR, branchName);
         branchFile.delete();
@@ -423,7 +427,7 @@ public class Repository {
             String blobId = blobs.get(fileName);
             File currentFile = join(CWD, fileName);
             Blob blob = getBlobFromBlobId(blobId);
-            writeObject(currentFile, blob);
+            writeContents(currentFile, blob.getContent());
         }
     }
 
@@ -486,7 +490,7 @@ public class Repository {
 
     private Commit getCommitFromIdHelper(String commitId) {
         Commit commit = getCommitFromId(commitId);
-        if (commit.equals(null)) {
+        if (commit == null) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
@@ -519,7 +523,7 @@ public class Repository {
 
     private Commit getCommitFromId(String firstParentId) {
         File commitFile = join(COMMITS_DIR, firstParentId);
-        if (firstParentId.equals("null") || !commitFile.exists()) {
+        if (!commitFile.exists() || firstParentId.equals("null") ) {
             return null;
         }
         Commit commit = readObject(commitFile, Commit.class);
@@ -593,32 +597,10 @@ public class Repository {
         return branchName;
     }
 
-    @Test
+
     public void test() {
         init();
-        add("wug.txt");
-        Stage stage = readStage();
-        System.out.println(stage.getRemoved());
-        add("notwug.txt");
-        stage = readStage();
-        System.out.println(stage.getRemoved());
-        commit("two files");
-        stage = readStage();
-        System.out.println(stage.getRemoved());
-        rm("wug.txt");
-        stage = readStage();
-        System.out.println(stage.getRemoved());
-        File file = join(CWD,"wug.txt");
-        if(file.exists()){
-            System.out.println("should not exist");
-        }
-        System.out.println("add a new txt file");
-
-        add("wug.txt");
-        stage = readStage();
-        System.out.println(stage.getRemoved());
-        status();
-
+        createbranch("other");
 
     }
 
