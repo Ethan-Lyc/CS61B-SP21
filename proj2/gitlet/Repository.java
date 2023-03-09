@@ -449,7 +449,7 @@ public class Repository {
         for (String s : other.getBlobs().keySet()) {
             set.add(s);
         }
-
+        return set;
     }
 
     private Commit getLatestCommonAncestor(String branchName) {
