@@ -108,7 +108,8 @@ public class Repository {
     public void init() {
         //Failure cases
         if (GITLET_DIR.exists() && GITLET_DIR.isDirectory()) {
-            System.out.println("A Gitlet version-control system already exists in the current directory");
+            System.out.println("A Gitlet version-control system"
+                   + " already exists in the current directory");
             System.exit(0);
         }
         //create directories
@@ -139,11 +140,16 @@ public class Repository {
     }
 
     /**
-     * 1. Staging an already-staged file overwrites the previous entry in the staging area with the new contents.
-     * 2. If the current working version of the file is identical to the version in the current commit,
-     * do not stage it to be added, and remove it from the staging area if it is already there
-     * (as can happen when a file is changed, added, and then changed back to it’s original version).
-     * 3. The file will no longer be staged for removal (see gitlet rm), if it was at the time of the command.
+     * 1. Staging an already-staged file overwrites the previous entry in
+     * the staging area with the new contents.
+     * 2. If the current working version of the file is identical to the
+     * version in the current commit,
+     * do not stage it to be added, and remove it from the staging area
+     * if it is already there
+     * (as can happen when a file is changed, added, and then changed back
+     * to it’s original version).
+     * 3. The file will no longer be staged for removal (see gitlet rm), if
+     * it was at the time of the command.
      *
      */
     public void add(String filename) {
@@ -182,17 +188,6 @@ public class Repository {
 
         }
     }
-    /*Saves a snapshot of tracked files in the current commit and staging area so they can
-     be restored at a later time, creating a new commit. The commit is said to be tracking
-      the saved files. By default, each commit’s snapshot of files will be exactly the same
-       as its parent commit’s snapshot of files; it will keep versions of files exactly as
-       they are, and not update them. A commit will only update the contents of files it is
-       tracking that have been staged for addition at the time of commit, in which case the
-       commit will now include the version of the file that was staged instead of the version
-       it got from its parent. A commit will save and start tracking any files that were staged
-       for addition but weren’t tracked by its parent. Finally, files tracked in the current commit
-        may be untracked in the new commit as a result being staged for removal by the rm command (below).
-        */
     public void commit(String message) {
         if (message.equals("")) {
             System.out.println("Please enter a commit message.");
@@ -404,8 +399,8 @@ public class Repository {
         replaceWorkingPlaceWithCommit(commit);
 
         String curHead = readContentsAsString(HEAD);
-        File headfile = join(HEADS_DIR,curHead);
-        writeContents(headfile,commit.getID());
+        File headfile = join(HEADS_DIR, curHead);
+        writeContents(headfile, commit.getID());
     }
 
 
@@ -448,7 +443,8 @@ public class Repository {
             String blobId = new Blob(untrackedFile, CWD).getId();
             String checkoutFileId = blobs.getOrDefault(untrackedFile, "");
             if (!blobId.equals(checkoutFileId)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.out.println("There is an untracked file in the way;"
+                       + " delete it, or add and commit it first.");
                 System.exit(0);
             }
         }
@@ -523,7 +519,7 @@ public class Repository {
 
     private Commit getCommitFromId(String firstParentId) {
         File commitFile = join(COMMITS_DIR, firstParentId);
-        if (!commitFile.exists() || firstParentId.equals("null") ) {
+        if (!commitFile.exists() || firstParentId.equals("null")) {
             return null;
         }
         Commit commit = readObject(commitFile, Commit.class);
