@@ -451,30 +451,31 @@ public class Repository {
             String hId = head.getBlobs().getOrDefault(filename, "");
             String oId = other.getBlobs().getOrDefault(filename, "");
 
-            boolean modifiedInHead = !hId.equals(lId) && !lId.equals("");
-            boolean modifiedInOther = !oId.equals(lId) && !lId.equals("");
+            boolean modifiedInHead = !hId.equals(lId) && !hId.equals("");
+            boolean modifiedInOther = !oId.equals(lId) && !oId.equals("");
 
-            if (modifiedInOther && !modifiedInHead) {
-                rewrite.add(filename);
-            }
-            if (modifiedInHead && !modifiedInOther) {
+            if (hId.equals(oId) || lId.equals(oId)) {
                 continue;
             }
-            if (modifiedInHead && modifiedInOther) {
-                if (hId.equals(oId)) {
-                    continue;
+            if (lId.equals(hId)) {
+                // change the file to other version
+                if (oId.equals("")) {
+                    // remove the file
+                    // rm(filename);
+                    remove.add(filename);
                 } else {
-                    conflict.add(filename);
+                    // rewrite working space's file with other version
+                    // checkoutFileFromBlobId(oId);
+                    // Blob blob = getBlobFromId(oId);
+                    // checkoutFileFromBlob(blob);
+                    // // add the file
+                    // add(filename);
+                    rewrite.add(filename);
                 }
+            } else {
+                // conflict
+                conflict.add(filename);
             }
-            if (hId.equals(lId) && hId.equals("") && !oId.equals("")) {
-                rewrite.add(filename);
-            }
-            if (modifiedInHead && oId.equals("")) {
-                remove.add(filename);
-            }
-
-
         }
 
 
