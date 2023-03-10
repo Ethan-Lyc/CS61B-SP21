@@ -489,8 +489,10 @@ public class Repository {
         // If an untracked file in the current commit would be overwritten or deleted by the merge
         List<String> untrackedFiles = getUntrackedFiles();
         for (String filename : untrackedFiles) {
-            if (remove.contains(filename) || rewrite.contains(filename) || conflict.contains(filename)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (remove.contains(filename) || rewrite.contains(filename)
+                    || conflict.contains(filename)) {
+                System.out.println("There is an untracked file in the way"
+                       + "; delete it, or add and commit it first.");
                 System.exit(0);
             }
         }
@@ -589,6 +591,9 @@ public class Repository {
         HashMap<String, Integer> map = new HashMap<>();
         Commit head = commit;
         map.put(head.getID(), 0);
+        if(head.getParents().size() == 2) {
+            map.put(head.getParents().get(1),1);
+        }
         int depth = 1;
         while (!head.getFirstParentId().equals("null")) {
             String parentCommitId = head.getFirstParentId();
