@@ -311,9 +311,22 @@ public class Repository {
     /*
     * java gitlet.Main checkout [commit id] -- [file name]
     */
-    public void checkoutFileFromCommitId(String commitId, String fileName) {
+    public void checkoutFileFromCommitId(String commitIdAbv, String fileName) {
+        String commitId = getCompleteCommitId(commitIdAbv);
         Commit commit = getCommitFromIdHelper(commitId);
         checkoutFileFromCommit(commit, fileName);
+    }
+    private String getCompleteCommitId(String commitId) {
+        if (commitId.length() == UID_LENGTH) {
+            return commitId;
+        }
+
+        for (String filename : COMMITS_DIR.list()) {
+            if (filename.startsWith(commitId)) {
+                return filename;
+            }
+        }
+        return null;
     }
     /*
     * java gitlet.Main checkout [branch name]
@@ -418,10 +431,10 @@ public class Repository {
         Commit other = getCommitFromBranchName(branchName);
         Commit splitPoint = getLatestCommonAncestor(branchName);
 
-        if (splitPoint.equals(other)) {
+        if (splitPoint.getID().equals(other.getID())) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
-        } else if (splitPoint.equals(head)) {
+        } else if (splitPoint.getID().equals(head.getID())) {
             checkoutFromBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             return;
@@ -464,12 +477,6 @@ public class Repository {
                     // rm(filename);
                     remove.add(filename);
                 } else {
-                    // rewrite working space's file with other version
-                    // checkoutFileFromBlobId(oId);
-                    // Blob blob = getBlobFromId(oId);
-                    // checkoutFileFromBlob(blob);
-                    // // add the file
-                    // add(filename);
                     rewrite.add(filename);
                 }
             } else {
