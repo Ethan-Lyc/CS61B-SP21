@@ -430,6 +430,12 @@ public class Repository {
         //3.merge
         mergeWithLCA(splitPoint, head, other);
 
+        String headBranchName = getHeadBranchName();
+
+        String msg = "Merged " + branchName + " into " + headBranchName + ".";
+        List<Commit> parents = List.of(head, other);
+        commitWith(msg, parents);
+
     }
 
     private void mergeWithLCA(Commit lca, Commit head, Commit other) {
@@ -441,12 +447,12 @@ public class Repository {
 
         for (String filename : filenames) {
             //blobId
-            String lId = lca.getBlobs().getOrDefault(filename,"");
-            String hId = head.getBlobs().getOrDefault(filename,"");
-            String oId = other.getBlobs().getOrDefault(filename,"");
+            String lId = lca.getBlobs().getOrDefault(filename, "");
+            String hId = head.getBlobs().getOrDefault(filename, "");
+            String oId = other.getBlobs().getOrDefault(filename, "");
 
-            boolean modifiedInHead = hId.equals(lId);
-            boolean modifiedInOther = oId.equals(lId);
+            boolean modifiedInHead = !hId.equals(lId) && !lId.equals("");
+            boolean modifiedInOther = !oId.equals(lId) && !lId.equals("");
 
             if (modifiedInOther && !modifiedInHead) {
                 rewrite.add(filename);
@@ -455,11 +461,11 @@ public class Repository {
                 continue;
             }
             if (modifiedInHead && modifiedInOther) {
-               if (hId.equals(oId)) {
-                   continue;
-               } else {
-                   conflict.add(filename);
-               }
+                if (hId.equals(oId)) {
+                    continue;
+                } else {
+                    conflict.add(filename);
+                }
             }
             if (hId.equals(lId) && hId.equals("") && !oId.equals("")) {
                 rewrite.add(filename);
@@ -482,11 +488,6 @@ public class Repository {
         }
 
 
-        if (!remove.isEmpty()) {
-            for (String filename : remove) {
-                rm(filename);
-            }
-        }
 
         if (!rewrite.isEmpty()) {
             for (String fileName : rewrite) {
@@ -498,11 +499,46 @@ public class Repository {
             }
         }
 
-        if (!conflict.isEmpty()) {
+        if (!remove.isEmpty()) {
+            for (String filename : remove) {
+                rm(filename);
+            }
+        }
 
+        if (!conflict.isEmpty()) {
+            for (String fileName : conflict) {
+                rewriteFile(fileName, getConflictContent(fileName, other));
+                System.out.println("Encountered a merge conflict.");
+            }
         }
 
     }
+
+    private void rewriteFile(String fileName, String conflictContent) {
+        File file = join(CWD, fileName);
+        writeContents(file, conflictContent);
+    }
+
+    private String getConflictContent(String fileName, Commit other) {
+        Commit head = getHead();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<<<<<<< HEAD" + "\n");
+        sb.append(readBlobContent(fileName, head));
+        sb.append("=======" + "\n");
+        sb.append(readBlobContent(fileName, other));
+        sb.append(">>>>>>>" + "\n");
+        return sb.toString();
+    }
+
+    private String readBlobContent(String fileName, Commit head) {
+        String blobId = head.getBlobs().getOrDefault(fileName, "");
+        if (blobId.equals("")) {
+            return blobId;
+        } else {
+            return readObject(join(BLOBS_DIR, blobId), Blob.class).getContentAsString();
+        }
+    }
+
 
     private Set<String> getAllFileNames(Commit splitPoint, Commit head, Commit other) {
         Set<String> set = new HashSet<>();
