@@ -591,8 +591,8 @@ public class Repository {
         HashMap<String, Integer> map = new HashMap<>();
         Commit head = commit;
         map.put(head.getID(), 0);
-        if(head.getParents().size() == 2) {
-            map.put(head.getParents().get(1),1);
+        if (head.getParents().size() == 2) {
+            map.put(head.getParents().get(1), 1);
         }
         int depth = 1;
         while (!head.getFirstParentId().equals("null")) {
